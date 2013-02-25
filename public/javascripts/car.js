@@ -39,16 +39,18 @@
 
   Car = (function() {
 
-    function Car(world) {
+    function Car(world, graphics) {
       this.update = __bind(this.update, this);
 
       this.reset = __bind(this.reset, this);
+
+      this.initGraphics = __bind(this.initGraphics, this);
 
       var axle1, axle2, bodyDef, boxDef, car, circleDef, prismaticJointDef, revoluteJointDef, wheel1, wheel2;
       boxDef = new b2FixtureDef;
       boxDef.density = 1.0;
       boxDef.friction = 0.5;
-      boxDef.restitution = 0.2;
+      boxDef.restitution = 0.01;
       boxDef.filter.groupIndex = -1;
       bodyDef = new b2BodyDef;
       bodyDef.type = b2Body.b2_dynamicBody;
@@ -64,10 +66,10 @@
       boxDef.shape.SetAsOrientedBox(0.4, 0.15, new b2Vec2(1, -0.3), -Math.PI / 3);
       car.CreateFixture(boxDef);
       boxDef.density = 1;
-      axle1 = world.CreateBody(bodyDef);
+      this.axle1 = axle1 = world.CreateBody(bodyDef);
       boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(-1 - 0.6 * Math.cos(Math.PI / 3), -0.3 - 0.6 * Math.sin(Math.PI / 3)), Math.PI / 3);
       axle1.CreateFixture(boxDef);
-      axle2 = world.CreateBody(bodyDef);
+      this.axle2 = axle2 = world.CreateBody(bodyDef);
       boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(1 + 0.6 * Math.cos(-Math.PI / 3), -0.3 + 0.6 * Math.sin(-Math.PI / 3)), -Math.PI / 3);
       axle2.CreateFixture(boxDef);
       prismaticJointDef = new b2PrismaticJoint();
@@ -88,10 +90,10 @@
       circleDef.shape = new b2CircleShape(.7);
       bodyDef.allowSleep = false;
       bodyDef.position.Set(axle1.GetWorldCenter().x + 0.3 * Math.cos(Math.PI / 3), axle1.GetWorldCenter().y + 0.3 * Math.sin(Math.PI / 3));
-      wheel1 = world.CreateBody(bodyDef);
+      this.wheel1 = wheel1 = world.CreateBody(bodyDef);
       wheel1.CreateFixture(circleDef);
       bodyDef.position.Set(axle2.GetWorldCenter().x - 0.3 * Math.cos(-Math.PI / 3), axle2.GetWorldCenter().y - 0.3 * Math.sin(-Math.PI / 3));
-      wheel2 = world.CreateBody(bodyDef);
+      this.wheel2 = wheel2 = world.CreateBody(bodyDef);
       wheel2.CreateFixture(circleDef);
       revoluteJointDef = new b2RevoluteJointDef();
       revoluteJointDef.enableMotor = true;
@@ -99,7 +101,35 @@
       this.motor1 = world.CreateJoint(revoluteJointDef);
       revoluteJointDef.Initialize(axle2, wheel2, wheel2.GetWorldCenter());
       this.motor2 = world.CreateJoint(revoluteJointDef);
+      this.initGraphics(graphics);
     }
+
+    Car.prototype.initGraphics = function(graphics) {
+      var body;
+      body = new createjs.Shape();
+      body.graphics.beginFill("green").drawRoundRect(0, 0, .8 * scale * 2, 0.1 * scale * 2, 5);
+      body.regRotation = Math.PI / 3;
+      body.regX = .8 * scale;
+      body.regY = .1 * scale;
+      graphics.trackObject(body, this.axle1);
+      body = new createjs.Shape();
+      body.graphics.beginFill("green").drawRoundRect(0, 0, .8 * scale * 2, 0.1 * scale * 2, 5);
+      body.regRotation = -Math.PI / 3;
+      body.regX = .8 * scale;
+      body.regY = .1 * scale;
+      graphics.trackObject(body, this.axle2);
+      body = new createjs.Shape();
+      body.graphics.beginLinearGradientFill(["#000", "#FFF"], [0, 1], 0, 0, .7 * scale, 0).drawCircle(0, 0, .7 * scale);
+      graphics.trackObject(body, this.wheel1);
+      body = new createjs.Shape();
+      body.graphics.beginLinearGradientFill(["#000", "#FFF"], [0, 1], 0, 0, .7 * scale, 0).drawCircle(0, 0, .7 * scale);
+      graphics.trackObject(body, this.wheel2);
+      body = new createjs.Shape();
+      body.graphics.beginFill("red").drawRoundRect(0, 0, 1.5 * scale * 2, 0.3 * scale * 2, 5);
+      body.regX = 1.5 * scale;
+      body.regY = .3 * scale;
+      return graphics.trackObject(body, this.carBody, true);
+    };
 
     Car.prototype.reset = function() {
       this.carBody.SetPositionAndAngle(new b2Vec2(startPosition.x, startPosition.y), startPosition.angle);
@@ -124,7 +154,7 @@
       if (controls.forward.down && controls.backward.down) {
         direction = 0;
       }
-      torque = 16;
+      torque = 17;
       if (direction === 0) {
         torque = .5;
       }

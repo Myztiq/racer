@@ -12,7 +12,7 @@ b2DebugDraw = Box2D.Dynamics.b2DebugDraw
 b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef
 
 class Track
-  constructor: (world)->
+  constructor: (world, graphics)->
     fixDef = new b2FixtureDef
     fixDef.density = 1.0
     fixDef.friction = 0.5
@@ -20,16 +20,19 @@ class Track
     bodyDef = new b2BodyDef
     bodyDef.type = b2Body.b2_staticBody
     fixDef.shape = new b2PolygonShape
-    fixDef.shape.SetAsBox 20, 2
+    fixDef.shape.SetAsBox 200, 2
     bodyDef.position.Set 10, 400 / 30 + 1.8
-    world.CreateBody(bodyDef).CreateFixture fixDef
-    bodyDef.position.Set 10, -1.8
-    world.CreateBody(bodyDef).CreateFixture fixDef
-    fixDef.shape.SetAsBox 2, 14
-    bodyDef.position.Set -1.8, 13
-    world.CreateBody(bodyDef).CreateFixture fixDef
-    bodyDef.position.Set 21.8, 13
-    world.CreateBody(bodyDef).CreateFixture fixDef
+    @ground = world.CreateBody(bodyDef)
+    @ground.CreateFixture fixDef
+    @initGraphics(graphics)
 
+  initGraphics: (graphics)=>
+    body = new createjs.Shape();
+    body.graphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 0, 200*scale, 0).drawRoundRect(0, 0, 200*scale*2, 2*scale*2, 5);
+    body.regX = 200*scale;
+    body.regY = 2*scale;
+    graphics.trackObject(body, @ground)
 
 window.Track = Track
+
+

@@ -19,11 +19,11 @@ startPosition =
   angle: Math.PI
 
 class Car
-  constructor: (world)->
+  constructor: (world, graphics)->
     boxDef = new b2FixtureDef
     boxDef.density = 1.0
     boxDef.friction = 0.5
-    boxDef.restitution = 0.2
+    boxDef.restitution = 0.01
     boxDef.filter.groupIndex = -1
 
     bodyDef = new b2BodyDef
@@ -48,11 +48,11 @@ class Car
     boxDef.density = 1
 
     # Make Axels
-    axle1 = world.CreateBody(bodyDef)
+    @axle1 = axle1 = world.CreateBody(bodyDef)
     boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(-1 - 0.6*Math.cos(Math.PI / 3), -0.3 - 0.6*Math.sin(Math.PI / 3)), Math.PI / 3)
     axle1.CreateFixture boxDef
 
-    axle2 = world.CreateBody(bodyDef)
+    @axle2 = axle2 = world.CreateBody(bodyDef)
     boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(1 + 0.6*Math.cos(-Math.PI / 3), -0.3 + 0.6*Math.sin(-Math.PI / 3)), -Math.PI / 3)
     axle2.CreateFixture boxDef
 
@@ -82,12 +82,12 @@ class Car
 
     # Make wheel 1
     bodyDef.position.Set axle1.GetWorldCenter().x + 0.3*Math.cos(Math.PI / 3), axle1.GetWorldCenter().y + 0.3*Math.sin(Math.PI / 3)
-    wheel1 = world.CreateBody(bodyDef)
+    @wheel1 = wheel1 = world.CreateBody(bodyDef)
     wheel1.CreateFixture circleDef
 
     # Make wheel 2
     bodyDef.position.Set axle2.GetWorldCenter().x - 0.3*Math.cos(-Math.PI / 3), axle2.GetWorldCenter().y - 0.3*Math.sin(-Math.PI / 3)
-    wheel2 = world.CreateBody(bodyDef)
+    @wheel2 = wheel2 = world.CreateBody(bodyDef)
     wheel2.CreateFixture circleDef
 
 
@@ -100,6 +100,36 @@ class Car
     revoluteJointDef.Initialize(axle2, wheel2, wheel2.GetWorldCenter())
     @motor2 = world.CreateJoint(revoluteJointDef)
 
+    @initGraphics(graphics)
+
+  initGraphics: (graphics)=>
+    body = new createjs.Shape();
+    body.graphics.beginFill("green").drawRoundRect(0, 0, .8*scale*2, 0.1*scale*2, 5);
+    body.regRotation = Math.PI / 3
+    body.regX = .8*scale;
+    body.regY = .1*scale;
+    graphics.trackObject(body, @axle1)
+
+    body = new createjs.Shape();
+    body.graphics.beginFill("green").drawRoundRect(0, 0, .8*scale*2, 0.1*scale*2, 5);
+    body.regRotation = -Math.PI / 3
+    body.regX = .8*scale;
+    body.regY = .1*scale;
+    graphics.trackObject(body, @axle2)
+
+    body = new createjs.Shape();
+    body.graphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 0, .7*scale, 0).drawCircle(0, 0, .7*scale);
+    graphics.trackObject(body, @wheel1)
+
+    body = new createjs.Shape();
+    body.graphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 0, .7*scale, 0).drawCircle(0, 0, .7*scale);
+    graphics.trackObject(body, @wheel2)
+
+    body = new createjs.Shape();
+    body.graphics.beginFill("red").drawRoundRect(0, 0, 1.5*scale*2, 0.3*scale*2, 5);
+    body.regX = 1.5*scale;
+    body.regY = .3*scale;
+    graphics.trackObject(body, @carBody, true)
 
 
   reset: =>
@@ -126,7 +156,7 @@ class Car
     if controls.forward.down and controls.backward.down
       direction = 0
 
-    torque = 16
+    torque = 17
     if direction == 0
       torque = .5
 
