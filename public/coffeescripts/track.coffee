@@ -24,14 +24,26 @@ class Track
     bodyDef.position.Set 10, 400 / 30 + 1.8
     @ground = world.CreateBody(bodyDef)
     @ground.CreateFixture fixDef
+
+
+    bodyDef = new b2BodyDef
+    bodyDef.type = b2Body.b2_staticBody
+    fixDef.shape.SetAsBox 10,.2
+    fixDef.shape.SetAsOrientedBox(10, .2, new b2Vec2(0,0), -Math.PI / 4)
+    bodyDef.position.Set 15,14
+    @ramp = world.CreateBody(bodyDef)
+    @ramp.CreateFixture fixDef
     @initGraphics(graphics)
 
   initGraphics: (graphics)=>
     body = new createjs.Shape();
-    body.graphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 0, 200*scale, 0).drawRoundRect(0, 0, 200*scale*2, 2*scale*2, 5);
-    body.regX = 200*scale;
-    body.regY = 2*scale;
-    graphics.trackObject(body, @ground)
+    img = new Image();
+    img.src="/images/brick.jpg";
+    img.onload= =>
+      body.graphics.beginBitmapFill(img).drawRoundRect(0, 0, 200*scale*2, 2*scale*2, 5);
+      body.regX = 200*scale;
+      body.regY = 2*scale;
+      graphics.trackObject(body, @ground)
 
 window.Track = Track
 

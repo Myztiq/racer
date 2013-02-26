@@ -44,16 +44,28 @@
       bodyDef.position.Set(10, 400 / 30 + 1.8);
       this.ground = world.CreateBody(bodyDef);
       this.ground.CreateFixture(fixDef);
+      bodyDef = new b2BodyDef;
+      bodyDef.type = b2Body.b2_staticBody;
+      fixDef.shape.SetAsBox(10, .2);
+      fixDef.shape.SetAsOrientedBox(10, .2, new b2Vec2(0, 0), -Math.PI / 4);
+      bodyDef.position.Set(15, 14);
+      this.ramp = world.CreateBody(bodyDef);
+      this.ramp.CreateFixture(fixDef);
       this.initGraphics(graphics);
     }
 
     Track.prototype.initGraphics = function(graphics) {
-      var body;
+      var body, img,
+        _this = this;
       body = new createjs.Shape();
-      body.graphics.beginLinearGradientFill(["#000", "#FFF"], [0, 1], 0, 0, 200 * scale, 0).drawRoundRect(0, 0, 200 * scale * 2, 2 * scale * 2, 5);
-      body.regX = 200 * scale;
-      body.regY = 2 * scale;
-      return graphics.trackObject(body, this.ground);
+      img = new Image();
+      img.src = "/images/brick.jpg";
+      return img.onload = function() {
+        body.graphics.beginBitmapFill(img).drawRoundRect(0, 0, 200 * scale * 2, 2 * scale * 2, 5);
+        body.regX = 200 * scale;
+        body.regY = 2 * scale;
+        return graphics.trackObject(body, _this.ground);
+      };
     };
 
     return Track;

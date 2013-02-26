@@ -21,7 +21,7 @@ startPosition =
 class Car
   constructor: (world, graphics)->
     boxDef = new b2FixtureDef
-    boxDef.density = 1.0
+    boxDef.density = .8
     boxDef.friction = 0.5
     boxDef.restitution = 0.01
     boxDef.filter.groupIndex = -1
@@ -36,31 +36,29 @@ class Car
     @carBody = car = world.CreateBody(bodyDef)
 
     boxDef.shape = new b2PolygonShape
-    boxDef.shape.SetAsBox 1.5, 0.3
+    boxDef.shape.SetAsBox 2.2,.5
     car.CreateFixture boxDef
 
-    boxDef.shape.SetAsOrientedBox(0.4, 0.15, new b2Vec2(-1, -0.3), Math.PI / 3)
-    car.CreateFixture boxDef
-
-    boxDef.shape.SetAsOrientedBox(0.4, 0.15, new b2Vec2(1, -0.3), -Math.PI / 3)
+    boxDef.density = 0
+    boxDef.shape.SetAsOrientedBox(0.8, 0.4, new b2Vec2(-.4, 0.8), 0)
     car.CreateFixture boxDef
 
     boxDef.density = 1
 
     # Make Axels
     @axle1 = axle1 = world.CreateBody(bodyDef)
-    boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(-1 - 0.6*Math.cos(Math.PI / 3), -0.3 - 0.6*Math.sin(Math.PI / 3)), Math.PI / 3)
+    boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(-1 - 0.6*Math.cos(Math.PI / 3), -0.7 - 0.6*Math.sin(Math.PI / 3)), Math.PI / 3)
     axle1.CreateFixture boxDef
 
     @axle2 = axle2 = world.CreateBody(bodyDef)
-    boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(1 + 0.6*Math.cos(-Math.PI / 3), -0.3 + 0.6*Math.sin(-Math.PI / 3)), -Math.PI / 3)
+    boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(1 + 0.6*Math.cos(-Math.PI / 3), -0.7 + 0.6*Math.sin(-Math.PI / 3)), -Math.PI / 3)
     axle2.CreateFixture boxDef
 
     # Make Joints
     prismaticJointDef = new b2PrismaticJoint()
     prismaticJointDef.Initialize(car, axle1, axle1.GetWorldCenter(), new b2Vec2(Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)))
-    prismaticJointDef.lowerTranslation = -0.3
-    prismaticJointDef.upperTranslation = 0.5
+    prismaticJointDef.lowerTranslation = -.7
+    prismaticJointDef.upperTranslation = 1.2
     prismaticJointDef.enableLimit = true
     prismaticJointDef.enableMotor = true
     @spring1 = world.CreateJoint(prismaticJointDef)
@@ -70,10 +68,9 @@ class Car
 
     # Add Wheels
     circleDef = new b2FixtureDef
-    circleDef.radius = 0.7
-    circleDef.density = 0.1
-    circleDef.friction = 5
-    circleDef.restitution = 0.2
+    circleDef.density = 0.9
+    circleDef.friction = 6
+    circleDef.restitution = .2
     circleDef.filter.groupIndex = -1
     circleDef.shape = new b2CircleShape(.7)
 
@@ -104,16 +101,16 @@ class Car
 
   initGraphics: (graphics)=>
     body = new createjs.Shape();
-    body.graphics.beginFill("green").drawRoundRect(0, 0, .8*scale*2, 0.1*scale*2, 5);
+    body.graphics.beginFill("green").drawRoundRect(0, 0, .9*scale*2, 0.1*scale*2, 5);
     body.regRotation = Math.PI / 3
-    body.regX = .8*scale;
+    body.regX = .5*scale;
     body.regY = .1*scale;
     graphics.trackObject(body, @axle1)
 
     body = new createjs.Shape();
-    body.graphics.beginFill("green").drawRoundRect(0, 0, .8*scale*2, 0.1*scale*2, 5);
+    body.graphics.beginFill("green").drawRoundRect(0, 0, .9*scale*2, 0.1*scale*2, 5);
     body.regRotation = -Math.PI / 3
-    body.regX = .8*scale;
+    body.regX = 1.2*scale;
     body.regY = .1*scale;
     graphics.trackObject(body, @axle2)
 
@@ -126,10 +123,17 @@ class Car
     graphics.trackObject(body, @wheel2)
 
     body = new createjs.Shape();
-    body.graphics.beginFill("red").drawRoundRect(0, 0, 1.5*scale*2, 0.3*scale*2, 5);
-    body.regX = 1.5*scale;
-    body.regY = .3*scale;
+    body.graphics.beginFill("red").drawRoundRect(0, 0, 2.2*scale*2, 0.5*scale*2, 5);
+    body.regX = 2.2*scale;
+    body.regY = .5*scale;
     graphics.trackObject(body, @carBody, true)
+
+    body = new createjs.Shape();
+    body.graphics.beginFill("red").drawRoundRect(0, 0, .8*scale*2, 0.4*scale*2, 5);
+    body.regX = 1.2*scale;
+    body.regY = -.4*scale;
+    graphics.trackObject(body, @carBody, true)
+
 
 
   reset: =>
@@ -137,13 +141,23 @@ class Car
     @carBody.SetLinearVelocity(new b2Vec2(0,0))
     @carBody.SetAngularVelocity(0)
 
-  update: (controls)=>
-    tension = 300
-    @spring1.SetMaxMotorForce(30+Math.abs(tension*Math.pow(@spring1.GetJointTranslation(), 2)));
-    @spring1.SetMotorSpeed((@spring1.GetMotorSpeed() - 10*@spring1.GetJointTranslation())*0.4);
+    @wheel1.SetPositionAndAngle(new b2Vec2(startPosition.x+1.4,  startPosition.y+1),  startPosition.angle)
+    @wheel1.SetLinearVelocity(new b2Vec2(0,0))
+    @wheel1.SetAngularVelocity(0)
 
-    @spring2.SetMaxMotorForce(20+Math.abs(tension*Math.pow(@spring2.GetJointTranslation(), 2)));
-    @spring2.SetMotorSpeed(-4*Math.pow(@spring2.GetJointTranslation(), 1));
+    @wheel2.SetPositionAndAngle(new b2Vec2(startPosition.x-1.4,  startPosition.y+1),  startPosition.angle)
+    @wheel2.SetLinearVelocity(new b2Vec2(0,0))
+    @wheel2.SetAngularVelocity(0)
+
+  update: (controls)=>
+    tension = 800
+    force = 10
+    speed = 10
+    @spring1.SetMaxMotorForce(force+Math.abs(tension*Math.pow(@spring1.GetJointTranslation(), 2)));
+    @spring1.SetMotorSpeed((@spring1.GetMotorSpeed() - speed*@spring1.GetJointTranslation())*0.4);
+
+    @spring2.SetMaxMotorForce(force+Math.abs(tension*Math.pow(@spring2.GetJointTranslation(), 2)));
+    @spring2.SetMotorSpeed((@spring2.GetMotorSpeed() - speed*@spring2.GetJointTranslation())*0.4);
 
 
     direction = 0
@@ -156,14 +170,15 @@ class Car
     if controls.forward.down and controls.backward.down
       direction = 0
 
-    torque = 17
+    torque = 19
+    speed = 10
     if direction == 0
       torque = .5
 
-    @motor1.SetMotorSpeed(15*Math.PI * direction);
+    @motor1.SetMotorSpeed(speed*Math.PI * direction);
     @motor1.SetMaxMotorTorque(torque);
 
-    @motor2.SetMotorSpeed(15*Math.PI * direction);
+    @motor2.SetMotorSpeed(speed*Math.PI * direction);
     @motor2.SetMaxMotorTorque(torque);
 
 window.Car = Car

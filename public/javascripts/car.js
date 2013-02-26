@@ -48,7 +48,7 @@
 
       var axle1, axle2, bodyDef, boxDef, car, circleDef, prismaticJointDef, revoluteJointDef, wheel1, wheel2;
       boxDef = new b2FixtureDef;
-      boxDef.density = 1.0;
+      boxDef.density = .8;
       boxDef.friction = 0.5;
       boxDef.restitution = 0.01;
       boxDef.filter.groupIndex = -1;
@@ -59,33 +59,31 @@
       bodyDef.angle = startPosition.angle;
       this.carBody = car = world.CreateBody(bodyDef);
       boxDef.shape = new b2PolygonShape;
-      boxDef.shape.SetAsBox(1.5, 0.3);
+      boxDef.shape.SetAsBox(2.2, .5);
       car.CreateFixture(boxDef);
-      boxDef.shape.SetAsOrientedBox(0.4, 0.15, new b2Vec2(-1, -0.3), Math.PI / 3);
-      car.CreateFixture(boxDef);
-      boxDef.shape.SetAsOrientedBox(0.4, 0.15, new b2Vec2(1, -0.3), -Math.PI / 3);
+      boxDef.density = 0;
+      boxDef.shape.SetAsOrientedBox(0.8, 0.4, new b2Vec2(-.4, 0.8), 0);
       car.CreateFixture(boxDef);
       boxDef.density = 1;
       this.axle1 = axle1 = world.CreateBody(bodyDef);
-      boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(-1 - 0.6 * Math.cos(Math.PI / 3), -0.3 - 0.6 * Math.sin(Math.PI / 3)), Math.PI / 3);
+      boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(-1 - 0.6 * Math.cos(Math.PI / 3), -0.7 - 0.6 * Math.sin(Math.PI / 3)), Math.PI / 3);
       axle1.CreateFixture(boxDef);
       this.axle2 = axle2 = world.CreateBody(bodyDef);
-      boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(1 + 0.6 * Math.cos(-Math.PI / 3), -0.3 + 0.6 * Math.sin(-Math.PI / 3)), -Math.PI / 3);
+      boxDef.shape.SetAsOrientedBox(0.4, 0.1, new b2Vec2(1 + 0.6 * Math.cos(-Math.PI / 3), -0.7 + 0.6 * Math.sin(-Math.PI / 3)), -Math.PI / 3);
       axle2.CreateFixture(boxDef);
       prismaticJointDef = new b2PrismaticJoint();
       prismaticJointDef.Initialize(car, axle1, axle1.GetWorldCenter(), new b2Vec2(Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)));
-      prismaticJointDef.lowerTranslation = -0.3;
-      prismaticJointDef.upperTranslation = 0.5;
+      prismaticJointDef.lowerTranslation = -.7;
+      prismaticJointDef.upperTranslation = 1.2;
       prismaticJointDef.enableLimit = true;
       prismaticJointDef.enableMotor = true;
       this.spring1 = world.CreateJoint(prismaticJointDef);
       prismaticJointDef.Initialize(car, axle2, axle2.GetWorldCenter(), new b2Vec2(-Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)));
       this.spring2 = world.CreateJoint(prismaticJointDef);
       circleDef = new b2FixtureDef;
-      circleDef.radius = 0.7;
-      circleDef.density = 0.1;
-      circleDef.friction = 5;
-      circleDef.restitution = 0.2;
+      circleDef.density = 0.9;
+      circleDef.friction = 6;
+      circleDef.restitution = .2;
       circleDef.filter.groupIndex = -1;
       circleDef.shape = new b2CircleShape(.7);
       bodyDef.allowSleep = false;
@@ -107,15 +105,15 @@
     Car.prototype.initGraphics = function(graphics) {
       var body;
       body = new createjs.Shape();
-      body.graphics.beginFill("green").drawRoundRect(0, 0, .8 * scale * 2, 0.1 * scale * 2, 5);
+      body.graphics.beginFill("green").drawRoundRect(0, 0, .9 * scale * 2, 0.1 * scale * 2, 5);
       body.regRotation = Math.PI / 3;
-      body.regX = .8 * scale;
+      body.regX = .5 * scale;
       body.regY = .1 * scale;
       graphics.trackObject(body, this.axle1);
       body = new createjs.Shape();
-      body.graphics.beginFill("green").drawRoundRect(0, 0, .8 * scale * 2, 0.1 * scale * 2, 5);
+      body.graphics.beginFill("green").drawRoundRect(0, 0, .9 * scale * 2, 0.1 * scale * 2, 5);
       body.regRotation = -Math.PI / 3;
-      body.regX = .8 * scale;
+      body.regX = 1.2 * scale;
       body.regY = .1 * scale;
       graphics.trackObject(body, this.axle2);
       body = new createjs.Shape();
@@ -125,25 +123,38 @@
       body.graphics.beginLinearGradientFill(["#000", "#FFF"], [0, 1], 0, 0, .7 * scale, 0).drawCircle(0, 0, .7 * scale);
       graphics.trackObject(body, this.wheel2);
       body = new createjs.Shape();
-      body.graphics.beginFill("red").drawRoundRect(0, 0, 1.5 * scale * 2, 0.3 * scale * 2, 5);
-      body.regX = 1.5 * scale;
-      body.regY = .3 * scale;
+      body.graphics.beginFill("red").drawRoundRect(0, 0, 2.2 * scale * 2, 0.5 * scale * 2, 5);
+      body.regX = 2.2 * scale;
+      body.regY = .5 * scale;
+      graphics.trackObject(body, this.carBody, true);
+      body = new createjs.Shape();
+      body.graphics.beginFill("red").drawRoundRect(0, 0, .8 * scale * 2, 0.4 * scale * 2, 5);
+      body.regX = 1.2 * scale;
+      body.regY = -.4 * scale;
       return graphics.trackObject(body, this.carBody, true);
     };
 
     Car.prototype.reset = function() {
       this.carBody.SetPositionAndAngle(new b2Vec2(startPosition.x, startPosition.y), startPosition.angle);
       this.carBody.SetLinearVelocity(new b2Vec2(0, 0));
-      return this.carBody.SetAngularVelocity(0);
+      this.carBody.SetAngularVelocity(0);
+      this.wheel1.SetPositionAndAngle(new b2Vec2(startPosition.x + 1.4, startPosition.y + 1), startPosition.angle);
+      this.wheel1.SetLinearVelocity(new b2Vec2(0, 0));
+      this.wheel1.SetAngularVelocity(0);
+      this.wheel2.SetPositionAndAngle(new b2Vec2(startPosition.x - 1.4, startPosition.y + 1), startPosition.angle);
+      this.wheel2.SetLinearVelocity(new b2Vec2(0, 0));
+      return this.wheel2.SetAngularVelocity(0);
     };
 
     Car.prototype.update = function(controls) {
-      var direction, tension, torque;
-      tension = 300;
-      this.spring1.SetMaxMotorForce(30 + Math.abs(tension * Math.pow(this.spring1.GetJointTranslation(), 2)));
-      this.spring1.SetMotorSpeed((this.spring1.GetMotorSpeed() - 10 * this.spring1.GetJointTranslation()) * 0.4);
-      this.spring2.SetMaxMotorForce(20 + Math.abs(tension * Math.pow(this.spring2.GetJointTranslation(), 2)));
-      this.spring2.SetMotorSpeed(-4 * Math.pow(this.spring2.GetJointTranslation(), 1));
+      var direction, force, speed, tension, torque;
+      tension = 800;
+      force = 10;
+      speed = 10;
+      this.spring1.SetMaxMotorForce(force + Math.abs(tension * Math.pow(this.spring1.GetJointTranslation(), 2)));
+      this.spring1.SetMotorSpeed((this.spring1.GetMotorSpeed() - speed * this.spring1.GetJointTranslation()) * 0.4);
+      this.spring2.SetMaxMotorForce(force + Math.abs(tension * Math.pow(this.spring2.GetJointTranslation(), 2)));
+      this.spring2.SetMotorSpeed((this.spring2.GetMotorSpeed() - speed * this.spring2.GetJointTranslation()) * 0.4);
       direction = 0;
       if (controls.forward.down) {
         direction = -1;
@@ -154,13 +165,14 @@
       if (controls.forward.down && controls.backward.down) {
         direction = 0;
       }
-      torque = 17;
+      torque = 19;
+      speed = 10;
       if (direction === 0) {
         torque = .5;
       }
-      this.motor1.SetMotorSpeed(15 * Math.PI * direction);
+      this.motor1.SetMotorSpeed(speed * Math.PI * direction);
       this.motor1.SetMaxMotorTorque(torque);
-      this.motor2.SetMotorSpeed(15 * Math.PI * direction);
+      this.motor2.SetMotorSpeed(speed * Math.PI * direction);
       return this.motor2.SetMaxMotorTorque(torque);
     };
 
