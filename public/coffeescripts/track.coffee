@@ -11,39 +11,99 @@ b2CircleShape = Box2D.Collision.Shapes.b2CircleShape
 b2DebugDraw = Box2D.Dynamics.b2DebugDraw
 b2MouseJointDef = Box2D.Dynamics.Joints.b2MouseJointDef
 
+getRandomArbitary = (min, max)->
+  Math.random() * (max - min) + min;
+
 class Track
-  constructor: (world, graphics)->
+  constructor: (@world, @graphics)->
+    @obstacles = []
+    @img = new Image();
+    @img.src="/images/brick.jpg";
+    @img.onload = =>
+      @loaded = true
+    @addObstacle
+      x: 0
+      y: 13
+      angle: 0
+      length: 0
+      right:
+        x: 0
+        y: 0
+      left:
+        x: 0
+        y: 0
+
+  drawObj: (obj, track)=>
+    if @loaded
+      body = new createjs.Shape();
+      body.graphics.beginBitmapFill(@img).drawRoundRect(0, 0, obj.length*scale*2, .2*scale*2, 5);
+      body.regX = obj.length*scale;
+      body.regY = .2*scale;
+      @graphics.trackObject(body, track)
+
+  addObstacle: (lastObjData)->
+    maxAngle = 40
+    minAngle = maxAngle*-1
+    maxAngleDifference = 30
+    maxLength = 2
+    minLength = .4
+
+    # prevent angle from changing direction too much
+    newAngle = getRandomArbitary(maxAngle, minAngle)
+    oldAngle = lastObjData.angle
+
+    difference = 0
+    if newAngle > oldAngle
+      difference = newAngle - oldAngle
+      if difference > maxAngleDifference
+        newAngle = oldAngle + maxAngleDifference
+    else
+      difference = oldAngle - newAngle
+      if difference > maxAngleDifference
+        newAngle = oldAngle - maxAngleDifference
+
+
+    customDrawData =
+      length: getRandomArbitary(maxLength, minLength)
+      angle: newAngle
+
+    customDrawData.left =
+      x: (customDrawData.length) * Math.cos(customDrawData.angle / (180 / Math.PI)) * -1
+      y: (customDrawData.length) * Math.sin(customDrawData.angle / (180 / Math.PI)) * -1
+
+    customDrawData.right =
+      x: (customDrawData.length) * Math.cos(customDrawData.angle / (180 / Math.PI))
+      y: (customDrawData.length) * Math.sin(customDrawData.angle / (180 / Math.PI))
+
+    customDrawData.x = lastObjData.right.x + lastObjData.x + -1*customDrawData.left.x
+    customDrawData.y = lastObjData.right.y + lastObjData.y + -1*customDrawData.left.y
+
+
+    # Create the shape!
     fixDef = new b2FixtureDef
-    fixDef.density = 1.0
-    fixDef.friction = 0.5
-    fixDef.restitution = 0.2
-    bodyDef = new b2BodyDef
-    bodyDef.type = b2Body.b2_staticBody
     fixDef.shape = new b2PolygonShape
-    fixDef.shape.SetAsBox 200, 2
-    bodyDef.position.Set 10, 400 / 30 + 1.8
-    @ground = world.CreateBody(bodyDef)
-    @ground.CreateFixture fixDef
-
-
     bodyDef = new b2BodyDef
     bodyDef.type = b2Body.b2_staticBody
-    fixDef.shape.SetAsBox 10,.2
-    fixDef.shape.SetAsOrientedBox(10, .2, new b2Vec2(0,0), -Math.PI / 4)
-    bodyDef.position.Set 15,14
-    @ramp = world.CreateBody(bodyDef)
-    @ramp.CreateFixture fixDef
-    @initGraphics(graphics)
+    fixDef.shape.SetAsBox customDrawData.length,.2
+    bodyDef.position.Set customDrawData.x, customDrawData.y
 
-  initGraphics: (graphics)=>
-    body = new createjs.Shape();
-    img = new Image();
-    img.src="/images/brick.jpg";
-    img.onload= =>
-      body.graphics.beginBitmapFill(img).drawRoundRect(0, 0, 200*scale*2, 2*scale*2, 5);
-      body.regX = 200*scale;
-      body.regY = 2*scale;
-      graphics.trackObject(body, @ground)
+    ramp = @world.CreateBody(bodyDef)
+    ramp.CreateFixture fixDef
+    ramp.SetAngle(customDrawData.angle / (180 / Math.PI))
+    ramp.length = length
+    @obstacles.push customDrawData
+    @drawObj(customDrawData, ramp)
+
+
+  # This get's called at every tick
+  debugged = 0
+  update: =>
+    # Get the car's position, figure out if we need to draw the next block
+    carPosition = game.car.carBody.GetWorldCenter()
+    # Get the end of our last drawn obstacle
+    lastObstacle = @obstacles[@obstacles.length-1]
+    if carPosition.x+20 > lastObstacle.x
+      @addObstacle(lastObstacle)
 
 window.Track = Track
 

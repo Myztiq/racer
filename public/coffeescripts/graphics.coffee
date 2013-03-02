@@ -27,8 +27,8 @@ class Graphics
     if @cameraObj?
       oldX = @stage.x
       oldY = @stage.y
-      @stage.x = @cameraObj.GetPosition().x * -scale + 300
-      @stage.y = @cameraObj.GetPosition().y * -scale + 300
+      @stage.x = @cameraObj.GetPosition().x * -scale + 200
+      @stage.y = @cameraObj.GetPosition().y * -scale + 200
       ctx.translate(@stage.x,@stage.y);
     @stage.update()
 

@@ -15,13 +15,23 @@
     reset: {
       down: false,
       pressed: false
+    },
+    rightTilt: {
+      down: false,
+      pressed: false
+    },
+    leftTilt: {
+      down: false,
+      pressed: false
     }
   };
 
   mapping = {
     37: 'forward',
     39: 'backward',
-    82: 'reset'
+    82: 'reset',
+    90: 'leftTilt',
+    88: 'rightTilt'
   };
 
   Controls = (function() {

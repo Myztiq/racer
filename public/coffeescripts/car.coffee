@@ -58,7 +58,7 @@ class Car
     prismaticJointDef = new b2PrismaticJoint()
     prismaticJointDef.Initialize(car, axle1, axle1.GetWorldCenter(), new b2Vec2(Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)))
     prismaticJointDef.lowerTranslation = -.7
-    prismaticJointDef.upperTranslation = 1.2
+    prismaticJointDef.upperTranslation = 0
     prismaticJointDef.enableLimit = true
     prismaticJointDef.enableMotor = true
     @spring1 = world.CreateJoint(prismaticJointDef)
@@ -151,8 +151,8 @@ class Car
 
   update: (controls)=>
     tension = 800
-    force = 10
-    speed = 10
+    force = 20
+    speed = 5
     @spring1.SetMaxMotorForce(force+Math.abs(tension*Math.pow(@spring1.GetJointTranslation(), 2)));
     @spring1.SetMotorSpeed((@spring1.GetMotorSpeed() - speed*@spring1.GetJointTranslation())*0.4);
 
@@ -170,15 +170,27 @@ class Car
     if controls.forward.down and controls.backward.down
       direction = 0
 
-    torque = 19
+    tilt = 0
+    if controls.leftTilt.down
+      tilt = -1
+
+    if controls.rightTilt.down
+      tilt = 1
+
+    if controls.leftTilt.down and controls.rightTilt.down
+      tilt = 0
+
+
+    torque = 15
     speed = 10
-    if direction == 0
-      torque = .5
 
     @motor1.SetMotorSpeed(speed*Math.PI * direction);
     @motor1.SetMaxMotorTorque(torque);
 
-    @motor2.SetMotorSpeed(speed*Math.PI * direction);
+    @motor2.SetMotorSpeed(speed*Math.PI * direction );
     @motor2.SetMaxMotorTorque(torque);
+
+    tiltTorque = 100
+    @carBody.ApplyTorque(tiltTorque*tilt)
 
 window.Car = Car

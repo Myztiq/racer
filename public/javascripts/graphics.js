@@ -46,8 +46,8 @@
       if (this.cameraObj != null) {
         oldX = this.stage.x;
         oldY = this.stage.y;
-        this.stage.x = this.cameraObj.GetPosition().x * -scale + 300;
-        this.stage.y = this.cameraObj.GetPosition().y * -scale + 300;
+        this.stage.x = this.cameraObj.GetPosition().x * -scale + 200;
+        this.stage.y = this.cameraObj.GetPosition().y * -scale + 200;
         ctx.translate(this.stage.x, this.stage.y);
       }
       return this.stage.update();

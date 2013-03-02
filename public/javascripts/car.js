@@ -74,7 +74,7 @@
       prismaticJointDef = new b2PrismaticJoint();
       prismaticJointDef.Initialize(car, axle1, axle1.GetWorldCenter(), new b2Vec2(Math.cos(Math.PI / 3), Math.sin(Math.PI / 3)));
       prismaticJointDef.lowerTranslation = -.7;
-      prismaticJointDef.upperTranslation = 1.2;
+      prismaticJointDef.upperTranslation = 0;
       prismaticJointDef.enableLimit = true;
       prismaticJointDef.enableMotor = true;
       this.spring1 = world.CreateJoint(prismaticJointDef);
@@ -147,10 +147,10 @@
     };
 
     Car.prototype.update = function(controls) {
-      var direction, force, speed, tension, torque;
+      var direction, force, speed, tension, tilt, tiltTorque, torque;
       tension = 800;
-      force = 10;
-      speed = 10;
+      force = 20;
+      speed = 5;
       this.spring1.SetMaxMotorForce(force + Math.abs(tension * Math.pow(this.spring1.GetJointTranslation(), 2)));
       this.spring1.SetMotorSpeed((this.spring1.GetMotorSpeed() - speed * this.spring1.GetJointTranslation()) * 0.4);
       this.spring2.SetMaxMotorForce(force + Math.abs(tension * Math.pow(this.spring2.GetJointTranslation(), 2)));
@@ -165,15 +165,24 @@
       if (controls.forward.down && controls.backward.down) {
         direction = 0;
       }
-      torque = 19;
-      speed = 10;
-      if (direction === 0) {
-        torque = .5;
+      tilt = 0;
+      if (controls.leftTilt.down) {
+        tilt = -1;
       }
+      if (controls.rightTilt.down) {
+        tilt = 1;
+      }
+      if (controls.leftTilt.down && controls.rightTilt.down) {
+        tilt = 0;
+      }
+      torque = 15;
+      speed = 10;
       this.motor1.SetMotorSpeed(speed * Math.PI * direction);
       this.motor1.SetMaxMotorTorque(torque);
       this.motor2.SetMotorSpeed(speed * Math.PI * direction);
-      return this.motor2.SetMaxMotorTorque(torque);
+      this.motor2.SetMaxMotorTorque(torque);
+      tiltTorque = 100;
+      return this.carBody.ApplyTorque(tiltTorque * tilt);
     };
 
     return Car;

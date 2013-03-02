@@ -9,7 +9,7 @@
 
   b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 
-  window.scale = 30.0;
+  window.scale = 20.0;
 
   Game = (function() {
 
@@ -47,6 +47,7 @@
       this.graphics.update(this.car, this.ctx);
       this.world.DrawDebugData();
       this.car.update(controlStatus);
+      this.track.update();
       this.world.Step(1 / 60, 10, 10);
       return this.world.ClearForces();
     };

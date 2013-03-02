@@ -1,7 +1,7 @@
 b2Vec2 = Box2D.Common.Math.b2Vec2
 b2World = Box2D.Dynamics.b2World
 b2DebugDraw = Box2D.Dynamics.b2DebugDraw
-window.scale = 30.0
+window.scale = 20.0
 class Game
 
   constructor: ->
@@ -33,6 +33,7 @@ class Game
     @graphics.update(@car, @ctx)
     @world.DrawDebugData()
     @car.update(controlStatus)
+    @track.update()
     @world.Step 1 / 60, 10, 10
     @world.ClearForces()
 
