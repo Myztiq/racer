@@ -81,7 +81,7 @@
       var body;
       if (this.loaded) {
         body = new createjs.Shape();
-        body.graphics.beginBitmapFill(this.img).drawRoundRect(0, 0, obj.length * scale * 2, 10 * scale * 2, 5);
+        body.graphics.beginBitmapFill(this.img).drawRoundRect(0, 0, obj.length * scale * 2, .2 * scale * 2, 5);
         body.regX = obj.length * scale;
         body.regY = .2 * scale;
         return this.graphics.trackObject(body, track);
@@ -112,8 +112,8 @@
       maxAngle = 40;
       minAngle = maxAngle * -1;
       maxAngleDifference = 30;
-      maxLength = 15;
-      minLength = 2;
+      maxLength = 4;
+      minLength = .2;
       newAngle = getRandomArbitary(maxAngle, minAngle);
       oldAngle = lastObjData.angle;
       difference = 0;

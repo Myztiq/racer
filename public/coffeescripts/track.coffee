@@ -44,7 +44,7 @@ class Track
   drawObj: (obj, track)=>
     if @loaded
       body = new createjs.Shape();
-      body.graphics.beginBitmapFill(@img).drawRoundRect(0, 0, obj.length*scale*2, 10*scale*2, 5);
+      body.graphics.beginBitmapFill(@img).drawRoundRect(0, 0, obj.length*scale*2, .2*scale*2, 5);
       body.regX = obj.length*scale;
       body.regY = .2*scale;
       @graphics.trackObject(body, track)
@@ -72,8 +72,8 @@ class Track
     maxAngle = 40
     minAngle = maxAngle*-1
     maxAngleDifference = 30
-    maxLength = 15
-    minLength = 2
+    maxLength = 4
+    minLength = .2
 
     # prevent angle from changing direction too much
     newAngle = getRandomArbitary(maxAngle, minAngle)
