@@ -17,36 +17,63 @@ getRandomArbitary = (min, max)->
 class Track
   constructor: (@world, @graphics)->
     @obstacles = []
+    @loadQueue = []
     @img = new Image();
     @img.src="/images/brick.jpg";
     @img.onload = =>
       @loaded = true
-    @addObstacle
+      for queued in @loadQueue
+        @drawObj(queued.obj, queued.track)
+
+    customDrawData =
       x: 0
       y: 13
       angle: 0
-      length: 0
+      length: 20
       right:
-        x: 0
+        x: 20
         y: 0
       left:
         x: 0
         y: 0
 
+    ramp = @addPhysicsObj(customDrawData)
+    @addObstacle(customDrawData)
+    @drawObj(customDrawData, ramp)
+
   drawObj: (obj, track)=>
     if @loaded
       body = new createjs.Shape();
-      body.graphics.beginBitmapFill(@img).drawRoundRect(0, 0, obj.length*scale*2, .2*scale*2, 5);
+      body.graphics.beginBitmapFill(@img).drawRoundRect(0, 0, obj.length*scale*2, 10*scale*2, 5);
       body.regX = obj.length*scale;
       body.regY = .2*scale;
       @graphics.trackObject(body, track)
+    else
+      @loadQueue.push
+        obj: obj
+        track: track
+
+  addPhysicsObj: (customDrawData)->
+    # Create the shape!
+    fixDef = new b2FixtureDef
+    fixDef.shape = new b2PolygonShape
+    bodyDef = new b2BodyDef
+    bodyDef.type = b2Body.b2_staticBody
+    fixDef.shape.SetAsBox customDrawData.length,.2
+    bodyDef.position.Set customDrawData.x, customDrawData.y
+
+    ramp = @world.CreateBody(bodyDef)
+    ramp.CreateFixture fixDef
+    ramp.SetAngle(customDrawData.angle / (180 / Math.PI))
+    ramp
+
 
   addObstacle: (lastObjData)->
     maxAngle = 40
     minAngle = maxAngle*-1
     maxAngleDifference = 30
-    maxLength = 2
-    minLength = .4
+    maxLength = 15
+    minLength = 2
 
     # prevent angle from changing direction too much
     newAngle = getRandomArbitary(maxAngle, minAngle)
@@ -79,18 +106,7 @@ class Track
     customDrawData.y = lastObjData.right.y + lastObjData.y + -1*customDrawData.left.y
 
 
-    # Create the shape!
-    fixDef = new b2FixtureDef
-    fixDef.shape = new b2PolygonShape
-    bodyDef = new b2BodyDef
-    bodyDef.type = b2Body.b2_staticBody
-    fixDef.shape.SetAsBox customDrawData.length,.2
-    bodyDef.position.Set customDrawData.x, customDrawData.y
-
-    ramp = @world.CreateBody(bodyDef)
-    ramp.CreateFixture fixDef
-    ramp.SetAngle(customDrawData.angle / (180 / Math.PI))
-    ramp.length = length
+    ramp = @addPhysicsObj(customDrawData)
     @obstacles.push customDrawData
     @drawObj(customDrawData, ramp)
 

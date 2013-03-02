@@ -96,8 +96,10 @@ class Car
 
     revoluteJointDef.Initialize(axle2, wheel2, wheel2.GetWorldCenter())
     @motor2 = world.CreateJoint(revoluteJointDef)
-
-    @initGraphics(graphics)
+    @tire = new Image()
+    @tire.src = '/images/tire.jpg'
+    @tire.onload = =>
+      @initGraphics(graphics)
 
   initGraphics: (graphics)=>
     body = new createjs.Shape();
@@ -115,11 +117,11 @@ class Car
     graphics.trackObject(body, @axle2)
 
     body = new createjs.Shape();
-    body.graphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 0, .7*scale, 0).drawCircle(0, 0, .7*scale);
+    body.graphics.beginBitmapFill(@tire).drawCircle(0, 0, .7*scale);
     graphics.trackObject(body, @wheel1)
 
     body = new createjs.Shape();
-    body.graphics.beginLinearGradientFill(["#000","#FFF"], [0, 1], 0, 0, .7*scale, 0).drawCircle(0, 0, .7*scale);
+    body.graphics.beginBitmapFill(@tire).drawCircle(0, 0, .7*scale);
     graphics.trackObject(body, @wheel2)
 
     body = new createjs.Shape();

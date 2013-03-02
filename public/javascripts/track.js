@@ -35,7 +35,8 @@
     var debugged;
 
     function Track(world, graphics) {
-      var _this = this;
+      var customDrawData, ramp,
+        _this = this;
       this.world = world;
       this.graphics = graphics;
       this.update = __bind(this.update, this);
@@ -43,45 +44,76 @@
       this.drawObj = __bind(this.drawObj, this);
 
       this.obstacles = [];
+      this.loadQueue = [];
       this.img = new Image();
       this.img.src = "/images/brick.jpg";
       this.img.onload = function() {
-        return _this.loaded = true;
+        var queued, _i, _len, _ref, _results;
+        _this.loaded = true;
+        _ref = _this.loadQueue;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          queued = _ref[_i];
+          _results.push(_this.drawObj(queued.obj, queued.track));
+        }
+        return _results;
       };
-      this.addObstacle({
+      customDrawData = {
         x: 0,
         y: 13,
         angle: 0,
-        length: 0,
+        length: 20,
         right: {
-          x: 0,
+          x: 20,
           y: 0
         },
         left: {
           x: 0,
           y: 0
         }
-      });
+      };
+      ramp = this.addPhysicsObj(customDrawData);
+      this.addObstacle(customDrawData);
+      this.drawObj(customDrawData, ramp);
     }
 
     Track.prototype.drawObj = function(obj, track) {
       var body;
       if (this.loaded) {
         body = new createjs.Shape();
-        body.graphics.beginBitmapFill(this.img).drawRoundRect(0, 0, obj.length * scale * 2, .2 * scale * 2, 5);
+        body.graphics.beginBitmapFill(this.img).drawRoundRect(0, 0, obj.length * scale * 2, 10 * scale * 2, 5);
         body.regX = obj.length * scale;
         body.regY = .2 * scale;
         return this.graphics.trackObject(body, track);
+      } else {
+        return this.loadQueue.push({
+          obj: obj,
+          track: track
+        });
       }
     };
 
+    Track.prototype.addPhysicsObj = function(customDrawData) {
+      var bodyDef, fixDef, ramp;
+      fixDef = new b2FixtureDef;
+      fixDef.shape = new b2PolygonShape;
+      bodyDef = new b2BodyDef;
+      bodyDef.type = b2Body.b2_staticBody;
+      fixDef.shape.SetAsBox(customDrawData.length, .2);
+      bodyDef.position.Set(customDrawData.x, customDrawData.y);
+      ramp = this.world.CreateBody(bodyDef);
+      ramp.CreateFixture(fixDef);
+      ramp.SetAngle(customDrawData.angle / (180 / Math.PI));
+      return ramp;
+    };
+
     Track.prototype.addObstacle = function(lastObjData) {
-      var bodyDef, customDrawData, difference, fixDef, maxAngle, maxAngleDifference, maxLength, minAngle, minLength, newAngle, oldAngle, ramp;
+      var customDrawData, difference, maxAngle, maxAngleDifference, maxLength, minAngle, minLength, newAngle, oldAngle, ramp;
       maxAngle = 40;
       minAngle = maxAngle * -1;
       maxAngleDifference = 30;
-      maxLength = 2;
-      minLength = .4;
+      maxLength = 15;
+      minLength = 2;
       newAngle = getRandomArbitary(maxAngle, minAngle);
       oldAngle = lastObjData.angle;
       difference = 0;
@@ -110,16 +142,7 @@
       };
       customDrawData.x = lastObjData.right.x + lastObjData.x + -1 * customDrawData.left.x;
       customDrawData.y = lastObjData.right.y + lastObjData.y + -1 * customDrawData.left.y;
-      fixDef = new b2FixtureDef;
-      fixDef.shape = new b2PolygonShape;
-      bodyDef = new b2BodyDef;
-      bodyDef.type = b2Body.b2_staticBody;
-      fixDef.shape.SetAsBox(customDrawData.length, .2);
-      bodyDef.position.Set(customDrawData.x, customDrawData.y);
-      ramp = this.world.CreateBody(bodyDef);
-      ramp.CreateFixture(fixDef);
-      ramp.SetAngle(customDrawData.angle / (180 / Math.PI));
-      ramp.length = length;
+      ramp = this.addPhysicsObj(customDrawData);
       this.obstacles.push(customDrawData);
       return this.drawObj(customDrawData, ramp);
     };

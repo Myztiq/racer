@@ -46,7 +46,8 @@
 
       this.initGraphics = __bind(this.initGraphics, this);
 
-      var axle1, axle2, bodyDef, boxDef, car, circleDef, prismaticJointDef, revoluteJointDef, wheel1, wheel2;
+      var axle1, axle2, bodyDef, boxDef, car, circleDef, prismaticJointDef, revoluteJointDef, wheel1, wheel2,
+        _this = this;
       boxDef = new b2FixtureDef;
       boxDef.density = .8;
       boxDef.friction = 0.5;
@@ -99,7 +100,11 @@
       this.motor1 = world.CreateJoint(revoluteJointDef);
       revoluteJointDef.Initialize(axle2, wheel2, wheel2.GetWorldCenter());
       this.motor2 = world.CreateJoint(revoluteJointDef);
-      this.initGraphics(graphics);
+      this.tire = new Image();
+      this.tire.src = '/images/tire.jpg';
+      this.tire.onload = function() {
+        return _this.initGraphics(graphics);
+      };
     }
 
     Car.prototype.initGraphics = function(graphics) {
@@ -117,10 +122,10 @@
       body.regY = .1 * scale;
       graphics.trackObject(body, this.axle2);
       body = new createjs.Shape();
-      body.graphics.beginLinearGradientFill(["#000", "#FFF"], [0, 1], 0, 0, .7 * scale, 0).drawCircle(0, 0, .7 * scale);
+      body.graphics.beginBitmapFill(this.tire).drawCircle(0, 0, .7 * scale);
       graphics.trackObject(body, this.wheel1);
       body = new createjs.Shape();
-      body.graphics.beginLinearGradientFill(["#000", "#FFF"], [0, 1], 0, 0, .7 * scale, 0).drawCircle(0, 0, .7 * scale);
+      body.graphics.beginBitmapFill(this.tire).drawCircle(0, 0, .7 * scale);
       graphics.trackObject(body, this.wheel2);
       body = new createjs.Shape();
       body.graphics.beginFill("red").drawRoundRect(0, 0, 2.2 * scale * 2, 0.5 * scale * 2, 5);
