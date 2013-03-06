@@ -82,6 +82,10 @@ class Car
     @wheel1 = wheel1 = world.CreateBody(bodyDef)
     wheel1.CreateFixture circleDef
 
+    #uncomment to be able to have your wheels be different sizes!
+#    circleDef.density = 0.5
+#    circleDef.shape = new b2CircleShape(1)
+
     # Make wheel 2
     bodyDef.position.Set axle2.GetWorldCenter().x - 0.3*Math.cos(-Math.PI / 3), axle2.GetWorldCenter().y - 0.3*Math.sin(-Math.PI / 3)
     @wheel2 = wheel2 = world.CreateBody(bodyDef)
@@ -100,6 +104,10 @@ class Car
     @tire.src = '/images/tire.jpg'
     @tire.onload = =>
       @initGraphics(graphics)
+
+#    @tire = MODIT.getImage('tire')
+#    @initGraphics(graphics)
+
 
   initGraphics: (graphics)=>
     body = new createjs.Shape();
@@ -152,9 +160,18 @@ class Car
     @wheel2.SetAngularVelocity(0)
 
   update: (controls)=>
+    #Springs
     tension = 800
     force = 20
     speed = 5
+
+    #Wheels
+    torque = 15
+    speed = 10
+
+    #z/x tilt
+    tiltTorque = 100
+
     @spring1.SetMaxMotorForce(force+Math.abs(tension*Math.pow(@spring1.GetJointTranslation(), 2)));
     @spring1.SetMotorSpeed((@spring1.GetMotorSpeed() - speed*@spring1.GetJointTranslation())*0.4);
 
@@ -182,17 +199,12 @@ class Car
     if controls.leftTilt.down and controls.rightTilt.down
       tilt = 0
 
-
-    torque = 15
-    speed = 10
-
     @motor1.SetMotorSpeed(speed*Math.PI * direction);
     @motor1.SetMaxMotorTorque(torque);
 
     @motor2.SetMotorSpeed(speed*Math.PI * direction );
     @motor2.SetMaxMotorTorque(torque);
 
-    tiltTorque = 100
     @carBody.ApplyTorque(tiltTorque*tilt)
 
 window.Car = Car

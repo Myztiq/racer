@@ -24,6 +24,8 @@ class Track
       @loaded = true
       for queued in @loadQueue
         @drawObj(queued.obj, queued.track)
+#    @loaded = true
+#    @img = MODIT.getImage('brick')
 
     customDrawData =
       x: 0
@@ -67,6 +69,23 @@ class Track
     ramp.SetAngle(customDrawData.angle / (180 / Math.PI))
     ramp
 
+  removePhysicsObj: (obj)->
+    @world.DestroyBody(obj)
+
+  cleanupTrack: (currentX)->
+    cleanupThreshold = 100
+    cleanupIndex = 0
+
+    for obstacle, i in @obstacles
+      if obstacle.physicsObj.GetWorldCenter().x+cleanupThreshold < currentX
+        @removePhysicsObj(obstacle.physicsObj)
+        cleanupIndex = i
+      else
+        break
+
+    if cleanupIndex > 0
+      @obstacles.splice 0, cleanupIndex
+
 
   addObstacle: (lastObjData)->
     maxAngle = 40
@@ -107,8 +126,9 @@ class Track
 
 
     ramp = @addPhysicsObj(customDrawData)
-    @obstacles.push customDrawData
     @drawObj(customDrawData, ramp)
+    customDrawData.physicsObj = ramp
+    @obstacles.push customDrawData
 
 
   # This get's called at every tick
@@ -120,6 +140,8 @@ class Track
     lastObstacle = @obstacles[@obstacles.length-1]
     if carPosition.x+20 > lastObstacle.x
       @addObstacle(lastObstacle)
+      @cleanupTrack(carPosition.x)
+
 
 window.Track = Track
 

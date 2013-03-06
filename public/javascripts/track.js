@@ -107,6 +107,29 @@
       return ramp;
     };
 
+    Track.prototype.removePhysicsObj = function(obj) {
+      return this.world.DestroyBody(obj);
+    };
+
+    Track.prototype.cleanupTrack = function(currentX) {
+      var cleanupIndex, cleanupThreshold, i, obstacle, _i, _len, _ref;
+      cleanupThreshold = 100;
+      cleanupIndex = 0;
+      _ref = this.obstacles;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        obstacle = _ref[i];
+        if (obstacle.physicsObj.GetWorldCenter().x + cleanupThreshold < currentX) {
+          this.removePhysicsObj(obstacle.physicsObj);
+          cleanupIndex = i;
+        } else {
+          break;
+        }
+      }
+      if (cleanupIndex > 0) {
+        return this.obstacles.splice(0, cleanupIndex);
+      }
+    };
+
     Track.prototype.addObstacle = function(lastObjData) {
       var customDrawData, difference, maxAngle, maxAngleDifference, maxLength, minAngle, minLength, newAngle, oldAngle, ramp;
       maxAngle = 40;
@@ -143,8 +166,9 @@
       customDrawData.x = lastObjData.right.x + lastObjData.x + -1 * customDrawData.left.x;
       customDrawData.y = lastObjData.right.y + lastObjData.y + -1 * customDrawData.left.y;
       ramp = this.addPhysicsObj(customDrawData);
-      this.obstacles.push(customDrawData);
-      return this.drawObj(customDrawData, ramp);
+      this.drawObj(customDrawData, ramp);
+      customDrawData.physicsObj = ramp;
+      return this.obstacles.push(customDrawData);
     };
 
     debugged = 0;
@@ -154,7 +178,8 @@
       carPosition = game.car.carBody.GetWorldCenter();
       lastObstacle = this.obstacles[this.obstacles.length - 1];
       if (carPosition.x + 20 > lastObstacle.x) {
-        return this.addObstacle(lastObstacle);
+        this.addObstacle(lastObstacle);
+        return this.cleanupTrack(carPosition.x);
       }
     };
 

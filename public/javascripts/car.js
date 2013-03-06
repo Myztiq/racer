@@ -156,6 +156,9 @@
       tension = 800;
       force = 20;
       speed = 5;
+      torque = 15;
+      speed = 10;
+      tiltTorque = 100;
       this.spring1.SetMaxMotorForce(force + Math.abs(tension * Math.pow(this.spring1.GetJointTranslation(), 2)));
       this.spring1.SetMotorSpeed((this.spring1.GetMotorSpeed() - speed * this.spring1.GetJointTranslation()) * 0.4);
       this.spring2.SetMaxMotorForce(force + Math.abs(tension * Math.pow(this.spring2.GetJointTranslation(), 2)));
@@ -180,13 +183,10 @@
       if (controls.leftTilt.down && controls.rightTilt.down) {
         tilt = 0;
       }
-      torque = 15;
-      speed = 10;
       this.motor1.SetMotorSpeed(speed * Math.PI * direction);
       this.motor1.SetMaxMotorTorque(torque);
       this.motor2.SetMotorSpeed(speed * Math.PI * direction);
       this.motor2.SetMaxMotorTorque(torque);
-      tiltTorque = 100;
       return this.carBody.ApplyTorque(tiltTorque * tilt);
     };
 
