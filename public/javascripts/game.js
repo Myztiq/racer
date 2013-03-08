@@ -40,7 +40,7 @@
     Game.prototype.update = function() {
       var controlStatus;
       controlStatus = this.controls.getControlStatus();
-      if (controlStatus.reset.down) {
+      if (controlStatus.reset.pressed) {
         this.reset();
       }
       this.$canvas.width = this.$canvas.width;
@@ -53,6 +53,7 @@
     };
 
     Game.prototype.reset = function() {
+      this.track.reset();
       return this.car.reset();
     };
 

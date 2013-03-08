@@ -13,23 +13,32 @@
       this.stage = new createjs.Stage("drawing");
     }
 
-    Graphics.prototype.trackObject = function(easelObject, box2dObject, isCameraObject) {
-      var trackingID;
-      if (isCameraObject == null) {
-        isCameraObject = false;
-      }
+    Graphics.prototype.trackObject = function(easelObject, box2dObject, _arg) {
+      var isCameraObject, trackingID, _ref;
+      _ref = _arg != null ? _arg : {}, isCameraObject = _ref.isCameraObject, trackingID = _ref.trackingID;
+      isCameraObject || (isCameraObject = false);
+      trackingID || (trackingID = Math.random());
       if (isCameraObject) {
         this.cameraObj = box2dObject;
       }
-      trackingID = Math.random();
       this.tracking[trackingID] = {
         easel: easelObject,
         box2d: box2dObject
       };
-      return this.stage.addChild(easelObject);
+      this.stage.addChild(easelObject);
+      return trackingID;
     };
 
-    Graphics.prototype.removeTracking = function(id) {};
+    Graphics.prototype.removeTracking = function(id) {
+      var obj;
+      obj = this.tracking[id];
+      if (obj != null) {
+        this.stage.removeChild(this.tracking[id].easel);
+        return delete this.tracking[id];
+      } else {
+        return console.log("Tracking object with ID " + id + " does not exist");
+      }
+    };
 
     Graphics.prototype.update = function(objToTrack, ctx) {
       var key, obj, oldX, oldY, _ref;

@@ -18,42 +18,38 @@ class Track
   constructor: (@world, @graphics)->
     @obstacles = []
     @loadQueue = []
-    @img = new Image();
-    @img.src="/images/brick.jpg";
-    @img.onload = =>
+    if MODIT?
       @loaded = true
-      for queued in @loadQueue
-        @drawObj(queued.obj, queued.track)
-#    @loaded = true
-#    @img = MODIT.getImage('brick')
+      @img = MODIT.getImage('brick')
+    else
+      @img = new Image();
+      @img.src="/images/brick.jpg";
+      @img.onload = =>
+        @loaded = true
+        for queued in @loadQueue
+          @drawObj(queued.obj, queued.track, queued.drawID)
+    @reset()
 
-    customDrawData =
-      x: 0
-      y: 13
-      angle: 0
-      length: 20
-      right:
-        x: 20
-        y: 0
-      left:
-        x: 0
-        y: 0
+    
 
-    ramp = @addPhysicsObj(customDrawData)
-    @addObstacle(customDrawData)
-    @drawObj(customDrawData, ramp)
-
-  drawObj: (obj, track)=>
+  drawObj: (obj, track, forceID)=>
     if @loaded
       body = new createjs.Shape();
       body.graphics.beginBitmapFill(@img).drawRoundRect(0, 0, obj.length*scale*2, .2*scale*2, 5);
       body.regX = obj.length*scale;
       body.regY = .2*scale;
-      @graphics.trackObject(body, track)
+      if forceID
+        id = @graphics.trackObject(body, track, {trackingID: forceID})
+      else
+        id = @graphics.trackObject(body, track)
+      id
     else
+      id = Math.random()
       @loadQueue.push
         obj: obj
         track: track
+        drawID: id
+      id
 
   addPhysicsObj: (customDrawData)->
     # Create the shape!
@@ -71,20 +67,47 @@ class Track
 
   removePhysicsObj: (obj)->
     @world.DestroyBody(obj)
+    
+  removeGraphicsObj: (id)->
+    @graphics.removeTracking id
+    
+  reset: ->
+    for obstacle in @obstacles
+      @removePhysicsObj(obstacle.physicsObj)
+      @removeGraphicsObj(obstacle.graphicsID)
 
+    @obstacles = []
+    customDrawData =
+      x: 0
+      y: 13
+      angle: 0
+      length: 20
+      right:
+        x: 20
+        y: 0
+      left:
+        x: 0
+        y: 0
+
+    ramp = @addPhysicsObj(customDrawData)
+    @addObstacle(customDrawData)
+    @drawObj(customDrawData, ramp)
+      
+    
   cleanupTrack: (currentX)->
     cleanupThreshold = 100
-    cleanupIndex = 0
+    cleanupIndex = -1
 
     for obstacle, i in @obstacles
       if obstacle.physicsObj.GetWorldCenter().x+cleanupThreshold < currentX
         @removePhysicsObj(obstacle.physicsObj)
+        @removeGraphicsObj(obstacle.graphicsID)
         cleanupIndex = i
       else
         break
 
-    if cleanupIndex > 0
-      @obstacles.splice 0, cleanupIndex
+    if cleanupIndex >= 0
+      @obstacles.splice 0, cleanupIndex+1
 
 
   addObstacle: (lastObjData)->
@@ -126,7 +149,7 @@ class Track
 
 
     ramp = @addPhysicsObj(customDrawData)
-    @drawObj(customDrawData, ramp)
+    customDrawData.graphicsID = @drawObj(customDrawData, ramp)
     customDrawData.physicsObj = ramp
     @obstacles.push customDrawData
 
@@ -140,9 +163,10 @@ class Track
     lastObstacle = @obstacles[@obstacles.length-1]
     if carPosition.x+20 > lastObstacle.x
       @addObstacle(lastObstacle)
+
+    if carPosition.x+200 > @obstacles[0].x
       @cleanupTrack(carPosition.x)
 
 
 window.Track = Track
-
 

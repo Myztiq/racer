@@ -27,7 +27,7 @@ class Game
 
   update: =>
     controlStatus = @controls.getControlStatus()
-    if controlStatus.reset.down
+    if controlStatus.reset.pressed
       @reset()
     @$canvas.width = @$canvas.width;
     @graphics.update(@car, @ctx)
@@ -38,6 +38,7 @@ class Game
     @world.ClearForces()
 
   reset: =>
+    @track.reset()
     @car.reset()
 
 

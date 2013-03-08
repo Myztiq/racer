@@ -100,14 +100,17 @@ class Car
 
     revoluteJointDef.Initialize(axle2, wheel2, wheel2.GetWorldCenter())
     @motor2 = world.CreateJoint(revoluteJointDef)
-    @tire = new Image()
-    @tire.src = '/images/tire.jpg'
-    @tire.onload = =>
+    if MODIT?
+      @tire = MODIT.getImage('tire')
       @initGraphics(graphics)
+    else
+      @tire = new Image()
+      @tire.src = '/images/tire.jpg'
+      @tire.onload = =>
+        @initGraphics(graphics)
+      
 
-#    @tire = MODIT.getImage('tire')
-#    @initGraphics(graphics)
-
+    
 
   initGraphics: (graphics)=>
     body = new createjs.Shape();
@@ -136,13 +139,13 @@ class Car
     body.graphics.beginFill("red").drawRoundRect(0, 0, 2.2*scale*2, 0.5*scale*2, 5);
     body.regX = 2.2*scale;
     body.regY = .5*scale;
-    graphics.trackObject(body, @carBody, true)
+    graphics.trackObject(body, @carBody, {isCameraObject:true})
 
     body = new createjs.Shape();
     body.graphics.beginFill("red").drawRoundRect(0, 0, .8*scale*2, 0.4*scale*2, 5);
     body.regX = 1.2*scale;
     body.regY = -.4*scale;
-    graphics.trackObject(body, @carBody, true)
+    graphics.trackObject(body, @carBody)
 
 
 
@@ -158,6 +161,17 @@ class Car
     @wheel2.SetPositionAndAngle(new b2Vec2(startPosition.x-1.4,  startPosition.y+1),  startPosition.angle)
     @wheel2.SetLinearVelocity(new b2Vec2(0,0))
     @wheel2.SetAngularVelocity(0)
+      
+      
+    @axle1.SetPositionAndAngle(new b2Vec2(startPosition.x,  startPosition.y),  startPosition.angle)
+    @axle1.SetLinearVelocity(new b2Vec2(0,0))
+    @axle1.SetAngularVelocity(0)
+      
+      
+    @axle2.SetPositionAndAngle(new b2Vec2(startPosition.x,  startPosition.y),  startPosition.angle)
+    @axle2.SetLinearVelocity(new b2Vec2(0,0))
+    @axle2.SetAngularVelocity(0)
+      
 
   update: (controls)=>
     #Springs
@@ -171,6 +185,8 @@ class Car
 
     #z/x tilt
     tiltTorque = 100
+
+
 
     @spring1.SetMaxMotorForce(force+Math.abs(tension*Math.pow(@spring1.GetJointTranslation(), 2)));
     @spring1.SetMotorSpeed((@spring1.GetMotorSpeed() - speed*@spring1.GetJointTranslation())*0.4);
@@ -198,6 +214,8 @@ class Car
 
     if controls.leftTilt.down and controls.rightTilt.down
       tilt = 0
+
+
 
     @motor1.SetMotorSpeed(speed*Math.PI * direction);
     @motor1.SetMaxMotorTorque(torque);

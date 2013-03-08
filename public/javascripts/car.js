@@ -100,11 +100,16 @@
       this.motor1 = world.CreateJoint(revoluteJointDef);
       revoluteJointDef.Initialize(axle2, wheel2, wheel2.GetWorldCenter());
       this.motor2 = world.CreateJoint(revoluteJointDef);
-      this.tire = new Image();
-      this.tire.src = '/images/tire.jpg';
-      this.tire.onload = function() {
-        return _this.initGraphics(graphics);
-      };
+      if (typeof MODIT !== "undefined" && MODIT !== null) {
+        this.tire = MODIT.getImage('tire');
+        this.initGraphics(graphics);
+      } else {
+        this.tire = new Image();
+        this.tire.src = '/images/tire.jpg';
+        this.tire.onload = function() {
+          return _this.initGraphics(graphics);
+        };
+      }
     }
 
     Car.prototype.initGraphics = function(graphics) {
@@ -131,12 +136,14 @@
       body.graphics.beginFill("red").drawRoundRect(0, 0, 2.2 * scale * 2, 0.5 * scale * 2, 5);
       body.regX = 2.2 * scale;
       body.regY = .5 * scale;
-      graphics.trackObject(body, this.carBody, true);
+      graphics.trackObject(body, this.carBody, {
+        isCameraObject: true
+      });
       body = new createjs.Shape();
       body.graphics.beginFill("red").drawRoundRect(0, 0, .8 * scale * 2, 0.4 * scale * 2, 5);
       body.regX = 1.2 * scale;
       body.regY = -.4 * scale;
-      return graphics.trackObject(body, this.carBody, true);
+      return graphics.trackObject(body, this.carBody);
     };
 
     Car.prototype.reset = function() {
@@ -148,7 +155,13 @@
       this.wheel1.SetAngularVelocity(0);
       this.wheel2.SetPositionAndAngle(new b2Vec2(startPosition.x - 1.4, startPosition.y + 1), startPosition.angle);
       this.wheel2.SetLinearVelocity(new b2Vec2(0, 0));
-      return this.wheel2.SetAngularVelocity(0);
+      this.wheel2.SetAngularVelocity(0);
+      this.axle1.SetPositionAndAngle(new b2Vec2(startPosition.x, startPosition.y), startPosition.angle);
+      this.axle1.SetLinearVelocity(new b2Vec2(0, 0));
+      this.axle1.SetAngularVelocity(0);
+      this.axle2.SetPositionAndAngle(new b2Vec2(startPosition.x, startPosition.y), startPosition.angle);
+      this.axle2.SetLinearVelocity(new b2Vec2(0, 0));
+      return this.axle2.SetAngularVelocity(0);
     };
 
     Car.prototype.update = function(controls) {

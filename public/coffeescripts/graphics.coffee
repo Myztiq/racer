@@ -4,16 +4,25 @@ class Graphics
     @tracking = {}
     @stage = new createjs.Stage("drawing");
 
-  trackObject: (easelObject, box2dObject, isCameraObject=false)=>
+  trackObject: (easelObject, box2dObject, {isCameraObject, trackingID} = {})=>
+    isCameraObject or= false
+    trackingID or= Math.random()
+
     if isCameraObject
       @cameraObj = box2dObject
-    trackingID = Math.random()
     @tracking[trackingID] =
       easel: easelObject
       box2d: box2dObject
     @stage.addChild easelObject
+    trackingID
 
   removeTracking: (id)->
+    obj = @tracking[id]
+    if obj?
+      @stage.removeChild @tracking[id].easel
+      delete @tracking[id]
+    else
+      console.log "Tracking object with ID #{id} does not exist"
 
 
   update: (objToTrack, ctx)=>

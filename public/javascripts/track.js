@@ -35,8 +35,7 @@
     var debugged;
 
     function Track(world, graphics) {
-      var customDrawData, ramp,
-        _this = this;
+      var _this = this;
       this.world = world;
       this.graphics = graphics;
       this.update = __bind(this.update, this);
@@ -45,51 +44,50 @@
 
       this.obstacles = [];
       this.loadQueue = [];
-      this.img = new Image();
-      this.img.src = "/images/brick.jpg";
-      this.img.onload = function() {
-        var queued, _i, _len, _ref, _results;
-        _this.loaded = true;
-        _ref = _this.loadQueue;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          queued = _ref[_i];
-          _results.push(_this.drawObj(queued.obj, queued.track));
-        }
-        return _results;
-      };
-      customDrawData = {
-        x: 0,
-        y: 13,
-        angle: 0,
-        length: 20,
-        right: {
-          x: 20,
-          y: 0
-        },
-        left: {
-          x: 0,
-          y: 0
-        }
-      };
-      ramp = this.addPhysicsObj(customDrawData);
-      this.addObstacle(customDrawData);
-      this.drawObj(customDrawData, ramp);
+      if (typeof MODIT !== "undefined" && MODIT !== null) {
+        this.loaded = true;
+        this.img = MODIT.getImage('brick');
+      } else {
+        this.img = new Image();
+        this.img.src = "/images/brick.jpg";
+        this.img.onload = function() {
+          var queued, _i, _len, _ref, _results;
+          _this.loaded = true;
+          _ref = _this.loadQueue;
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            queued = _ref[_i];
+            _results.push(_this.drawObj(queued.obj, queued.track, queued.drawID));
+          }
+          return _results;
+        };
+      }
+      this.reset();
     }
 
-    Track.prototype.drawObj = function(obj, track) {
-      var body;
+    Track.prototype.drawObj = function(obj, track, forceID) {
+      var body, id;
       if (this.loaded) {
         body = new createjs.Shape();
         body.graphics.beginBitmapFill(this.img).drawRoundRect(0, 0, obj.length * scale * 2, .2 * scale * 2, 5);
         body.regX = obj.length * scale;
         body.regY = .2 * scale;
-        return this.graphics.trackObject(body, track);
+        if (forceID) {
+          id = this.graphics.trackObject(body, track, {
+            trackingID: forceID
+          });
+        } else {
+          id = this.graphics.trackObject(body, track);
+        }
+        return id;
       } else {
-        return this.loadQueue.push({
+        id = Math.random();
+        this.loadQueue.push({
           obj: obj,
-          track: track
+          track: track,
+          drawID: id
         });
+        return id;
       }
     };
 
@@ -111,22 +109,55 @@
       return this.world.DestroyBody(obj);
     };
 
+    Track.prototype.removeGraphicsObj = function(id) {
+      return this.graphics.removeTracking(id);
+    };
+
+    Track.prototype.reset = function() {
+      var customDrawData, obstacle, ramp, _i, _len, _ref;
+      _ref = this.obstacles;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        obstacle = _ref[_i];
+        this.removePhysicsObj(obstacle.physicsObj);
+        this.removeGraphicsObj(obstacle.graphicsID);
+      }
+      this.obstacles = [];
+      customDrawData = {
+        x: 0,
+        y: 13,
+        angle: 0,
+        length: 20,
+        right: {
+          x: 20,
+          y: 0
+        },
+        left: {
+          x: 0,
+          y: 0
+        }
+      };
+      ramp = this.addPhysicsObj(customDrawData);
+      this.addObstacle(customDrawData);
+      return this.drawObj(customDrawData, ramp);
+    };
+
     Track.prototype.cleanupTrack = function(currentX) {
       var cleanupIndex, cleanupThreshold, i, obstacle, _i, _len, _ref;
       cleanupThreshold = 100;
-      cleanupIndex = 0;
+      cleanupIndex = -1;
       _ref = this.obstacles;
       for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
         obstacle = _ref[i];
         if (obstacle.physicsObj.GetWorldCenter().x + cleanupThreshold < currentX) {
           this.removePhysicsObj(obstacle.physicsObj);
+          this.removeGraphicsObj(obstacle.graphicsID);
           cleanupIndex = i;
         } else {
           break;
         }
       }
-      if (cleanupIndex > 0) {
-        return this.obstacles.splice(0, cleanupIndex);
+      if (cleanupIndex >= 0) {
+        return this.obstacles.splice(0, cleanupIndex + 1);
       }
     };
 
@@ -166,7 +197,7 @@
       customDrawData.x = lastObjData.right.x + lastObjData.x + -1 * customDrawData.left.x;
       customDrawData.y = lastObjData.right.y + lastObjData.y + -1 * customDrawData.left.y;
       ramp = this.addPhysicsObj(customDrawData);
-      this.drawObj(customDrawData, ramp);
+      customDrawData.graphicsID = this.drawObj(customDrawData, ramp);
       customDrawData.physicsObj = ramp;
       return this.obstacles.push(customDrawData);
     };
@@ -179,6 +210,8 @@
       lastObstacle = this.obstacles[this.obstacles.length - 1];
       if (carPosition.x + 20 > lastObstacle.x) {
         this.addObstacle(lastObstacle);
+      }
+      if (carPosition.x + 200 > this.obstacles[0].x) {
         return this.cleanupTrack(carPosition.x);
       }
     };
